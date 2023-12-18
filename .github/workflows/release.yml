@@ -25,4 +25,6 @@ jobs:
           gh release create "${tag}" \
               --repo="$GITHUB_REPOSITORY" \
               --title="${GITHUB_REPOSITORY#*/} ${tag}" \
+              --notes-from-tag \
+              --verify-tag \
               cmyd.pk3
