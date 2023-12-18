@@ -20,7 +20,7 @@ override void DetachFromOwner() {
 override void Tick() {
     super.Tick();
 
-    if (owner == null && owner.player == null) {
+    if (!owner && !owner.player) {
         return;
     }
 
@@ -37,7 +37,7 @@ override void Tick() {
 }
 
 void Cleanup() {
-    if (weapon != null) {
+    if (weapon) {
         weapon.Destroy();
     }
 }
@@ -49,13 +49,18 @@ void HideForLocalPlayer() {
 }
 
 void SpawnWeapon(string clazz) {
-    if (weapon != null) {
+    if (weapon) {
         weapon.Destroy();
     }
 
     weapon = Actor.Spawn(clazz, pos);
+
+    weapon.bFlatSprite = true;
+    weapon.bRollSprite = true;
+    weapon.bForceXYBillboard = false;
+    weapon.bForceYBillboard = false;
     weapon.bNoInteraction = true;
-    weapon.bWallSprite = true;
+    weapon.bRollSprite = true;
     weapon.bSolid = false;
     weapon.bShootable = false;
     weapon.bNoGravity = true;
@@ -68,13 +73,17 @@ void SpawnWeapon(string clazz) {
 }
 
 void RepositionWeapon() {
-    float dir = owner.angle;
+    float hDir = owner.angle;
+    float vDir = owner.pitch;
+
     float dist = owner.radius + weapon.radius;
 
-    float x = owner.pos.x + Cos(dir) * dist;
-    float y = owner.pos.y + Sin(dir) * dist;
-    float z = owner.pos.z + owner.height * 0.5;
+    float x = owner.pos.x + Cos(hDir) * dist;
+    float y = owner.pos.y + Sin(hDir) * dist;
+    float z = owner.pos.z + owner.height * 0.5 - Sin(vDir) * dist;
 
     weapon.SetXYZ((x, y, z));
-    weapon.angle = dir - 90.0;
+    weapon.angle = hDir - 90.0;
+    weapon.pitch = 270.0;
+    weapon.roll = vDir;
 }
