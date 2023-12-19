@@ -2,6 +2,7 @@
 
 FILES=(
     mapinfo.txt
+    cvarinfo.txt
     zscript.zs
     zscript/
 )
