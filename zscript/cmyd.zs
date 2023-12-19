@@ -5,6 +5,9 @@ string lastWeaponClazz;
 
 Default {
     +Inventory.Quiet
+    +Inventory.Undroppable
+    +Inventory.PersistentPower
+    +Inventory.NeverRespawn
 }
 
 override void AttachToOwner(Actor other) {
@@ -20,20 +23,28 @@ override void DetachFromOwner() {
 override void Tick() {
     super.Tick();
 
-    if (!owner && !owner.player) {
+    if (!owner) {
         return;
     }
 
-    string clazz = owner.player.readyWeapon.GetClassName();
+    string clazz = GetWeaponClazz();
 
-    if (lastWeaponClazz != clazz) {
-        SpawnWeapon(clazz);
+    if (clazz != "") {
+        RespawnWeapon(clazz);
     }
 
-    RepositionWeapon();
-    HideForLocalPlayer();
+    if (weapon) {
+        RepositionWeapon();
+        HideForLocalPlayer();
+    }
+}
 
-    lastWeaponClazz = clazz;
+string GetWeaponClazz() {
+    if (owner.player) {
+        return owner.player.readyWeapon.GetClassName();
+    }
+
+    return "";
 }
 
 void Cleanup() {
@@ -43,12 +54,18 @@ void Cleanup() {
 }
 
 void HideForLocalPlayer() {
-    if (owner.player == players[consolePlayer]) {
-        weapon.bInvisible = true;
+    bool shouldHide = CVar.GetCVar("cmyd_hide_for_local").GetBool();
+
+    if (owner.player && owner.player == players[consolePlayer]) {
+        weapon.bInvisible = shouldHide;
     }
 }
 
-void SpawnWeapon(string clazz) {
+void RespawnWeapon(string clazz) {
+    if (lastWeaponClazz == clazz) {
+        return;
+    }
+
     if (weapon) {
         weapon.Destroy();
     }
@@ -60,7 +77,6 @@ void SpawnWeapon(string clazz) {
     weapon.bForceXYBillboard = false;
     weapon.bForceYBillboard = false;
     weapon.bNoInteraction = true;
-    weapon.bRollSprite = true;
     weapon.bSolid = false;
     weapon.bShootable = false;
     weapon.bNoGravity = true;
@@ -70,6 +86,8 @@ void SpawnWeapon(string clazz) {
     weapon.bNoTelestomp = true;
     weapon.bCannotPush = true;
     weapon.bNoDamage = true;
+
+    lastWeaponClazz = clazz;
 }
 
 void RepositionWeapon() {
